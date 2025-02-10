@@ -1,12 +1,12 @@
 // import Mailjet from 'node-mailjet';
 import { Resend } from "resend";
-import mailchimp from "@mailchimp/mailchimp_marketing";
-import { createHash } from "node:crypto";
+// import mailchimp from "@mailchimp/mailchimp_marketing";
+// import { createHash } from "node:crypto";
 
-mailchimp.setConfig({
-    apiKey: process.env.MAILCHIMP_API_KEY,
-    server: process.env.MAILCHIMP_SERVER_PREFIX
-});
+// mailchimp.setConfig({
+//     apiKey: process.env.MAILCHIMP_API_KEY,
+//     server: process.env.MAILCHIMP_SERVER_PREFIX
+// });
 
 // export async function createContact(email) {
 //     // const Mailjet = require('node-mailjet');
@@ -81,46 +81,46 @@ mailchimp.setConfig({
 // }
 
 export async function sendEmail(name, email, phone, message) {
-    let resend = new Resend(process.env.RESEND_API_KEY);
-    let { data, error } = await resend.emails.send({
-        from: process.env.FROM_EMAIL,
-        to: [process.env.TO_EMAIL],
-        subject: "Message from Brian Mwangi contact form",
-        html: `<div>
+  let resend = new Resend(process.env.RESEND_API_KEY);
+  let { data, error } = await resend.emails.send({
+    from: process.env.FROM_EMAIL,
+    to: [process.env.TO_EMAIL],
+    subject: "Message from Brian Mwangi contact form",
+    html: `<div>
                     <p>Hi, I contacted you from Brian Mwangi website. Here are my details:</p>
                     <p>Name: ${name}</p>
                     <p>Email: ${email}</p>
                     <p>Phone: ${phone}</p>
                     <p>Message: ${message}</p>
                 </div>
-                `
-    });
+                `,
+  });
 
-    if (error) {
-        throw new Error(error);
-    }
+  if (error) {
+    throw new Error(error);
+  }
 
-    return data;
+  return data;
 }
 
-export async function subscribe(name, email) {
+// export async function subscribe(name, email) {
 
-    function generateMD5(input) {
-        return createHash('md5').update(input).digest('hex');
-    }
+//     function generateMD5(input) {
+//         return createHash('md5').update(input).digest('hex');
+//     }
 
-    let subscriberHash = generateMD5(email.toLowerCase());
+//     let subscriberHash = generateMD5(email.toLowerCase());
 
-    let nameArray = name.split(' ');
+//     let nameArray = name.split(' ');
 
-    let res = await mailchimp.lists.setListMember(process.env.MAILCHIMP_AUDIENCE_ID, subscriberHash, {
-        email_address: email,
-        status_if_new: 'subscribed',
-        merge_fields: {
-            FNAME: nameArray[0],
-            ...(nameArray[1] && { LNAME: nameArray[1] })
-        }
-    });
+//     let res = await mailchimp.lists.setListMember(process.env.MAILCHIMP_AUDIENCE_ID, subscriberHash, {
+//         email_address: email,
+//         status_if_new: 'subscribed',
+//         merge_fields: {
+//             FNAME: nameArray[0],
+//             ...(nameArray[1] && { LNAME: nameArray[1] })
+//         }
+//     });
 
-    return res;
-}
+//     return res;
+// }
