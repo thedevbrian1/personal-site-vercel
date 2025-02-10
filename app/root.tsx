@@ -46,8 +46,8 @@ export const links: Route.LinksFunction = () => [
     href: "https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap",
   },
   {
-    href: "https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&family=Source+Sans+3:wght@300;400;600&display=swap",
     rel: "stylesheet",
+    href: "https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&family=Source+Sans+3:wght@300;400;600&display=swap",
   },
 ];
 
@@ -219,7 +219,7 @@ function Footer() {
           </div>
         </div>
         <div className="bg-slightly-lighter-dark-blue rounded-xl border border-slate-500 mt-10">
-          <div className="grid md:grid-cols-2 gap-5 px-5 py-10">
+          <div className="grid md:grid-cols-2 gap-5 px-6 py-10">
             <div className="lg:self-center opacity-0 fade-in">
               <h2 className="text-white font-heading font-bold text-xl lg:text-3xl">
                 Sign up for the newsletter
@@ -338,7 +338,8 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
           <div className="w-40">
             <ErrorIcon />
           </div>
-          <h1 className="text-red-500 text-3xl">Error fetching post</h1>
+          <h1 className="text-red-500 text-3xl">Error</h1>
+          <p>{error.message}</p>
           <Link
             to="."
             prefetch="intent"

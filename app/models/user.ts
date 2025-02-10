@@ -8,3 +8,27 @@ export async function getUserByUserId(request: Request, userId: string) {
     .eq("user_id", userId);
   return { user };
 }
+
+export async function createUser(request: Request, userObj) {
+  let { supabase, headers } = await createSBClient(request);
+
+  let { data } = await supabase.auth.signUp({
+    email: userObj.email,
+    password: userObj.password,
+  });
+
+  let userId = data.user?.id;
+
+  let { data: user } = await supabase
+    .from("users")
+    .insert([
+      {
+        name: userObj.userName,
+        email: userObj.email,
+        user_id: userId,
+      },
+    ])
+    .select();
+
+  return { user, headers };
+}
