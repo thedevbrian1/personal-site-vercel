@@ -110,7 +110,7 @@ export default function Index() {
 function Hero() {
   return (
     <section className="w-full md:min-h-[70vh] lg:min-h-screen relative">
-      <div className="w-80 h-80 absolute -left-60 lg:-left-44 top-20 bg-brand-orange blur-3xl bg-opacity-20 rounded-full" />
+      <div className="w-80 h-80 absolute -left-60 lg:-left-44 top-20 bg-brand-orange/20 blur-3xl  rounded-full" />
       <div className="w-full xl:max-w-7xl mx-auto grid items-start lg:place-items-center py-10 lg:py-auto md:mt-20 lg:mt-0">
         <div
           id="hero"
@@ -163,7 +163,7 @@ function Hero() {
           </div>
         </div>
       </div>
-      <div className="w-56 h-56 lg:w-80 lg:h-80 absolute -bottom-10 lg:-bottom-40 left-20 lg:left-1/3 bg-brand-orange blur-3xl bg-opacity-20 rounded-full" />
+      <div className="w-56 h-56 lg:w-80 lg:h-80 absolute -bottom-10 lg:-bottom-40 left-20 lg:left-1/3 bg-brand-orange/20 blur-3xl rounded-full" />
     </section>
   );
 }
