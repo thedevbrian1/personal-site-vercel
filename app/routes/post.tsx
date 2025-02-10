@@ -4,7 +4,6 @@ import {
   data,
   isRouteErrorResponse,
   useActionData,
-  useLoaderData,
   useNavigation,
   useRouteError,
 } from "react-router";
@@ -28,41 +27,42 @@ import "highlight.js/styles/night-owl.css";
 import { urlFor } from "~/utils";
 import { FormSpacer } from "~/components/FormSpacer";
 import Input from "~/components/Input";
-import {
-  badRequest,
-  validateMessage,
-  validateName,
-} from "~/.server/validation";
+import { badRequest, validateMessage } from "~/.server/validation";
 import { getUser } from "~/.server/supabase";
+import type { Route } from "./+types/post";
+import { createComment, getPostComments } from "~/models/comment";
+import { getUserByUserId } from "~/models/user";
 
 Lowlight.registerLanguage("js", javascript);
 
-export function headers({ loaderHeaders }) {
+export function headers({ loaderHeaders }: Route.HeadersArgs) {
   return { "Cache-Control": loaderHeaders.get("Cache-Control") };
 }
 
 export function meta({ data }) {
   return [
-    { title: data[0].title },
+    { title: data.post[0].title },
     {
       name: "description",
-      content: data[0].description,
+      content: data.post[0].description,
     },
   ];
 }
-export async function loader({ params, request }) {
-  const post = await getPost(params.slug);
 
-  return data(post);
+export async function loader({ params, request }: Route.LoaderArgs) {
+  const post = await getPost(params.slug);
+  let postId = post[0]._id;
+
+  let comments = await getPostComments(request, postId);
+
+  return data({ post, comments });
 }
 
-export async function action({ request }) {
+export async function action({ request, params }: Route.ActionArgs) {
   let formData = await request.formData();
-  let userName = formData.get("username");
-  let comment = formData.get("comment");
+  let comment = String(formData.get("comment"));
 
   let fieldErrors = {
-    userName: validateName(userName),
     comment: validateMessage(comment),
   };
 
@@ -72,11 +72,38 @@ export async function action({ request }) {
 
   //   Write comment to DB
 
-  let { user, headers } = await getUser(request);
-  if (!user) {
+  let { user: authUser, headers } = await getUser(request);
+  let authUserId = authUser?.id;
+
+  console.log({ authUser });
+
+  if (!authUser) {
     throw new Response("You need to be logged in to proceed", { status: 400 });
   }
-  return data({ ok: true }, { headers });
+
+  const post = await getPost(params.slug);
+  let postId = post[0]._id;
+
+  let { user } = await getUserByUserId(request, authUserId);
+
+  let userId = user?.id;
+
+  console.log({ user });
+
+  let commentObj = {
+    content: comment,
+    postId,
+    userId,
+  };
+
+  let { comment: userComment, headers: commentHeaders } = await createComment(
+    request,
+    commentObj
+  );
+
+  console.log({ userComment });
+
+  return data({ ok: true }, { headers: commentHeaders });
 }
 
 const components = {
@@ -180,7 +207,7 @@ function Code({ value }) {
   }, [isCopied]);
 
   return (
-    <div className="relative" tabIndex="0" onKeyDown={handleKeyDown}>
+    <div className="relative" tabIndex={0} onKeyDown={handleKeyDown}>
       {isCopied ? (
         <span
           className="absolute top-5 right-6 flex gap-1 items-center text-green-500 transition ease-in-out duration-300"
@@ -205,28 +232,14 @@ function Code({ value }) {
   );
 }
 
-export default function Post() {
-  const post = useLoaderData();
+export default function Post({ loaderData }: Route.ComponentProps) {
+  let { post, comments } = loaderData;
 
   let actionData = useActionData();
   let navigation = useNavigation();
 
   let isSubmitting = navigation.state === "submitting";
 
-  let comments = [
-    {
-      userName: "Brian",
-      comment: "Great article! Keep educating us!",
-    },
-    {
-      userName: "Mwangi",
-      comment: "A very insightful post",
-    },
-    {
-      userName: "Doe",
-      comment: "What a brilliant young man!",
-    },
-  ];
   return (
     <main className="mt-20 py-16 px-6  max-w-3xl 2xl:max-w-3xl mx-auto text-gray-300">
       <div className="ml-2 md:ml-6">
@@ -261,9 +274,9 @@ export default function Post() {
       </article>
 
       <section className="md:max-w-lg">
-        <h2 className="font-semibold text-lg">Comments ({comments.length})</h2>
+        <h2 className="font-semibold text-lg">Comments ({comments?.length})</h2>
         <div className="mt-4">
-          {comments.length === 0 ? (
+          {comments?.length === 0 ? (
             <div className="flex flex-col items-center">
               <div className="w-24">
                 <SpaceIllustration />
@@ -273,14 +286,17 @@ export default function Post() {
           ) : (
             <ul className="space-y-4">
               {comments.map((item) => (
-                <li className="bg-[#35363e] p-6 rounded-lg">
+                <li
+                  key={crypto.randomUUID()}
+                  className="bg-[#35363e] p-6 rounded-lg"
+                >
                   <div className="flex gap-2 items-center">
                     <span className="w-10 h-10 rounded-full font-semibold bg-brand-orange text-white grid place-items-center">
-                      {item.userName.charAt(0)}
+                      {item.users.name.charAt(0)}
                     </span>
-                    <p className="font-semibold">{item.userName}</p>
+                    <p className="font-semibold">{item.users.name}</p>
                   </div>
-                  <div className="mt-4 text-gray-300/80">{item.comment}</div>
+                  <div className="mt-4 text-gray-300/80">{item.content}</div>
                 </li>
               ))}
             </ul>
@@ -289,24 +305,6 @@ export default function Post() {
 
         <h3 className="mt-8 font-semibold text-lg">Add a comment</h3>
         <Form method="post" className="mt-4">
-          <FormSpacer>
-            <label htmlFor="username" className="text-body-white">
-              User name{" "}
-              {/* {actionData?.fieldErrors.userName ? (
-                <span className="text-red-500 ml-2" id="message-error">
-                  {actionData.fieldErrors.userName}
-                </span>
-              ) : (
-                <>&nbsp;</>
-              )} */}
-            </label>
-            <Input
-              type="text"
-              name="username"
-              id="username"
-              fieldError={actionData?.fieldErrors?.userName}
-            />
-          </FormSpacer>
           <FormSpacer>
             <label htmlFor="comment">
               Comment{" "}
@@ -327,7 +325,7 @@ export default function Post() {
           </FormSpacer>
           <button
             disabled={isSubmitting}
-            className="bg-gradient-to-r from-[#c94b4b] to-[#4b134f] hover:bg-gradient-to-r hover:from-[#4b134f] hover:to-[#c94b4b] active:scale-[.97] transition ease-in-out duration-200 w-full flex justify-center py-3  rounded-lg font-bold lg:text-lg text-white"
+            className="bg-gradient-to-r from-[#c94b4b] to-[#4b134f] hover:bg-gradient-to-r hover:from-[#4b134f] hover:to-[#c94b4b] active:scale-[.97] transition ease-in-out duration-200 w-full flex justify-center items-center py-3 min-h-14  rounded-lg font-bold lg:text-lg text-white"
           >
             {isSubmitting ? (
               <div className="w-10" aria-label="submitting">
@@ -361,7 +359,8 @@ export function ErrorBoundary() {
           <Link
             to="."
             prefetch="intent"
-            className="px-4 py-2 rounded flex gap-1 text-white bg-gradient-to-r from-[#c94b4b] to-[#4b134f] hover:bg-gradient-to-r hover:from-[#4b134f] hover:to-[#c94b4b]"
+            preventScrollReset
+            className="px-4 py-2 rounded flex gap-1 text-white bg-gradient-to-r from-[#c94b4b] to-[#4b134f] hover:bg-gradient-to-r hover:from-[#4b134f] hover:to-[#c94b4b] active:scale-[.97] transition ease-in-out duration-300"
           >
             Try again
           </Link>

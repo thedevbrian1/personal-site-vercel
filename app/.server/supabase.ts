@@ -3,14 +3,13 @@ import {
   parseCookieHeader,
   serializeCookieHeader,
 } from "@supabase/ssr";
-import { redirect } from "react-router";
 
-export async function createSBClient(request) {
+export async function createSBClient(request: Request) {
   const headers = new Headers();
 
   const supabase = createServerClient(
-    process.env.SUPABASE_PROJECT_URL,
-    process.env.SUPABASE_PUBLIC_API_KEY,
+    process.env.SUPABASE_PROJECT_URL!,
+    process.env.SUPABASE_PUBLIC_API_KEY!,
     {
       cookies: {
         getAll() {
@@ -31,7 +30,7 @@ export async function createSBClient(request) {
   return { supabase, headers };
 }
 
-export async function getUser(request) {
+export async function getUser(request: Request) {
   let { supabase, headers } = await createSBClient(request);
   let {
     data: { user },

@@ -20,7 +20,14 @@ import { useSpinDelay } from "spin-delay";
 
 import { honeypot } from "./.server/honeypot";
 import { HoneypotProvider, HoneypotInputs } from "remix-utils/honeypot/react";
-import { Facebook, LinkedIn, ThreeDots, Twitter } from "./components/Icon";
+import {
+  Bars,
+  ErrorIcon,
+  Facebook,
+  LinkedIn,
+  ThreeDots,
+  Twitter,
+} from "./components/Icon";
 import { FormSpacer } from "./components/FormSpacer";
 import Input from "./components/Input";
 import Nav from "./components/Nav";
@@ -109,6 +116,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body className="bg-dark-blue text-body-white">
+        {showLoadingState ? (
+          <div className="w-full fixed z-10 grid place-items-center inset-0 bg-black/50">
+            <span className="w-14 h-14 md:w-16 md:h-16">
+              <Bars />
+            </span>
+          </div>
+        ) : null}
         <HoneypotProvider {...honeypotInputProps}>
           <header className="flex justify-between items-center absolute top-0 left-0 right-0 z-10 pt-8 px-6 lg:pl-12 lg:pr-16">
             {/* 
@@ -294,30 +308,46 @@ function Footer() {
   );
 }
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
-  let message = "Oops!";
-  let details = "An unexpected error occurred.";
-  let stack: string | undefined;
-
   if (isRouteErrorResponse(error)) {
-    message = error.status === 404 ? "404" : "Error";
-    details =
-      error.status === 404
-        ? "The requested page could not be found."
-        : error.statusText || details;
-  } else if (import.meta.env.DEV && error && error instanceof Error) {
-    details = error.message;
-    stack = error.stack;
+    console.error({ error });
+    return (
+      <div className="w-full h-screen flex justify-center items-center">
+        <div className="flex flex-col items-center gap-4 text-gray-300">
+          <div className="w-40">
+            <ErrorIcon />
+          </div>
+          <h1 className="font-semibold text-3xl text-red-500">
+            {error.status} {error.statusText}
+          </h1>
+          <p>{error.data}</p>
+          <Link
+            to="."
+            prefetch="intent"
+            className="px-4 py-2 rounded flex gap-1 text-white bg-gradient-to-r from-[#c94b4b] to-[#4b134f] hover:bg-gradient-to-r hover:from-[#4b134f] hover:to-[#c94b4b] active:scale-[.97] transition ease-in-out duration-300"
+          >
+            Try again
+          </Link>
+        </div>
+      </div>
+    );
+  } else if (error instanceof Error) {
+    console.error({ error });
+    return (
+      <div className="w-full h-screen flex justify-center items-center">
+        <div className="flex flex-col items-center gap-4 px-6 xl:px-0">
+          <div className="w-40">
+            <ErrorIcon />
+          </div>
+          <h1 className="text-red-500 text-3xl">Error fetching post</h1>
+          <Link
+            to="."
+            prefetch="intent"
+            className="px-4 py-2 rounded flex gap-1 text-white bg-gradient-to-r from-[#c94b4b] to-[#4b134f] hover:bg-gradient-to-r hover:from-[#4b134f] hover:to-[#c94b4b]"
+          >
+            Try again
+          </Link>
+        </div>
+      </div>
+    );
   }
-
-  return (
-    <main className="pt-16 p-4 container mx-auto">
-      <h1>{message}</h1>
-      <p>{details}</p>
-      {stack && (
-        <pre className="w-full p-4 overflow-x-auto">
-          <code>{stack}</code>
-        </pre>
-      )}
-    </main>
-  );
 }
