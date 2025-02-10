@@ -1,6 +1,7 @@
 import type { Config } from "tailwindcss";
 
 export default {
+  darkMode: ["class"],
   content: ["./app/**/{**,.client,.server}/**/*.{js,jsx,ts,tsx}"],
   theme: {
     extend: {
@@ -11,11 +12,20 @@ export default {
         "brand-orange": "#F38016",
         "body-white": "#DADADA",
       },
-    },
-    fontFamily: {
-      heading: ['"Libre Baskerville"', "sans-serif"],
-      body: ['"Source Sans 3"', "sans-serif"],
+      fontFamily: {
+        heading: ['"Libre Baskerville"', "sans-serif"],
+        body: ['"Source Sans 3"', "sans-serif"],
+      },
+      borderRadius: {
+        lg: "var(--radius)",
+        md: "calc(var(--radius) - 2px)",
+        sm: "calc(var(--radius) - 4px)",
+      },
     },
   },
-  plugins: [require("autoprefixer"), require("@tailwindcss/typography")],
+  plugins: [
+    require("autoprefixer"),
+    require("@tailwindcss/typography"),
+    require("tailwindcss-animate"),
+  ],
 } satisfies Config;

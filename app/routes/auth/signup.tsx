@@ -170,7 +170,7 @@ export default function Signup({ actionData }: Route.ComponentProps) {
             <div className="flex justify-center text-green-400">
               <CircleCheckBig className="w-96" />
             </div>
-            <h2 className="font-semibold text-3xl lg:text-5xl mt-4">
+            <h2 className="font-semibold font-heading text-3xl lg:text-5xl mt-4">
               Success!
             </h2>
             <p className="mt-4">
