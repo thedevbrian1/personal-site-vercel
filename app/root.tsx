@@ -1,16 +1,23 @@
 import {
+  data,
   isRouteErrorResponse,
   Links,
   Meta,
   Outlet,
   Scripts,
   ScrollRestoration,
+  useLoaderData,
 } from "react-router";
 
 import type { Route } from "./+types/root";
-import "./app.css";
+import tailwindStyles from "./styles/app.css?url";
+import animationStyles from "./styles/animation.css?url";
+import { honeypot } from "./.server/honeypot";
+import { HoneypotProvider } from "remix-utils/honeypot/react";
 
 export const links: Route.LinksFunction = () => [
+  { rel: "stylesheet", href: tailwindStyles },
+  { rel: "stylesheet", href: animationStyles },
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
   {
     rel: "preconnect",
@@ -21,9 +28,19 @@ export const links: Route.LinksFunction = () => [
     rel: "stylesheet",
     href: "https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap",
   },
+  {
+    href: "https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&family=Source+Sans+3:wght@300;400;600&display=swap",
+    rel: "stylesheet",
+  },
 ];
 
+export async function loader() {
+  return data({ honeypotInputProps: honeypot.getInputProps() });
+}
+
 export function Layout({ children }: { children: React.ReactNode }) {
+  let { honeypotInputProps } = useLoaderData();
+
   return (
     <html lang="en">
       <head>
@@ -32,8 +49,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Meta />
         <Links />
       </head>
-      <body>
-        {children}
+      <body className="bg-dark-blue text-body-white">
+        <HoneypotProvider {...honeypotInputProps}>{children}</HoneypotProvider>
         <ScrollRestoration />
         <Scripts />
       </body>
