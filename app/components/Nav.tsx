@@ -12,7 +12,7 @@ export default function Nav({ navLinks, userName }) {
   }
 
   return (
-    <nav>
+    <nav className="flex gap-2 md:gap-4 lg:gap-6 items-center">
       {/* Desktop menu */}
       <div className="flex gap-6 items-center">
         <ul className="text-white hidden lg:flex gap-6">
@@ -25,14 +25,6 @@ export default function Nav({ navLinks, userName }) {
             </li>
           ))}
         </ul>
-        <button
-          type="button"
-          popoverTarget="account-menu"
-          id="account-menu-toggle"
-          className="hidden bg-brand-orange hover:bg-orange-700 w-10 h-10 rounded-full md:grid place-items-center text-white font-semibold transition ease-out duration-300"
-        >
-          {userName?.charAt(0)}
-        </button>
       </div>
 
       {/* Mobile menu */}
@@ -58,6 +50,17 @@ export default function Nav({ navLinks, userName }) {
           </div>
         )}
       </div>
+      {userName ? (
+        <button
+          type="button"
+          popoverTarget="account-menu"
+          id="account-menu-toggle"
+          className=" bg-brand-orange hover:bg-orange-700 w-10 h-10 rounded-full grid place-items-center text-white font-semibold transition ease-out duration-300"
+        >
+          {userName?.charAt(0)}
+        </button>
+      ) : null}
+
       <div
         popover="auto"
         // anchor="account-menu-toggle"
@@ -75,7 +78,14 @@ export default function Nav({ navLinks, userName }) {
           </button>
         </div>
         <Form method="post" action="/logout">
-          <Button type="submit" variant="destructive">
+          <Button
+            type="submit"
+            variant="destructive"
+            onClick={(e) => {
+              let popoverEl = document.querySelector("#account-menu");
+              popoverEl?.hidePopover();
+            }}
+          >
             Logout
           </Button>
         </Form>

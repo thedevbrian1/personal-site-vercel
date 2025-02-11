@@ -101,7 +101,7 @@ export default function Login({ actionData }: Route.ComponentProps) {
               type="password"
               id="password"
               name="password"
-              autoComplete="new-password"
+              //   autoComplete="new-password"
               className={`border border-gray-400 ${
                 fieldErrors?.password ? "border-red-500" : ""
               }  focus-visible:border-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white transition ease-in-out duration-300`}
