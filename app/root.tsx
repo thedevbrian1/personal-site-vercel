@@ -19,6 +19,7 @@ import animationStyles from "./styles/animation.css?url";
 import { useSpinDelay } from "spin-delay";
 
 import { honeypot } from "./.server/honeypot";
+import toast, { Toaster } from "react-hot-toast";
 import { HoneypotProvider, HoneypotInputs } from "remix-utils/honeypot/react";
 import {
   Bars,
@@ -33,6 +34,7 @@ import Input from "./components/Input";
 import Nav from "./components/Nav";
 import { getUser } from "./.server/supabase";
 import { getUserByUserId } from "./models/user";
+import { commitSession, getSession } from "./.server/session";
 
 export const links: Route.LinksFunction = () => [
   { rel: "stylesheet", href: tailwindStyles },
@@ -54,6 +56,9 @@ export const links: Route.LinksFunction = () => [
 ];
 
 export async function loader({ request }: Route.LoaderArgs) {
+  let session = await getSession(request.headers.get("Cookie"));
+  let toastMessage = session.get("toastMessage");
+
   let { user: authUser } = await getUser(request);
   let userId = authUser?.id;
 
@@ -61,22 +66,38 @@ export async function loader({ request }: Route.LoaderArgs) {
     let { user } = await getUserByUserId(request, userId);
 
     if (user?.length !== 0) {
-      return data({
-        honeypotInputProps: honeypot.getInputProps(),
-        userName: user[0].name,
-      });
+      return data(
+        {
+          honeypotInputProps: honeypot.getInputProps(),
+          userName: user[0].name,
+          toastMessage,
+        },
+        {
+          headers: {
+            "Set-Cookie": await commitSession(session),
+          },
+        }
+      );
     }
   }
 
-  return data({
-    honeypotInputProps: honeypot.getInputProps(),
-    userName: null,
-  });
+  return data(
+    {
+      honeypotInputProps: honeypot.getInputProps(),
+      userName: null,
+      toastMessage,
+    },
+    {
+      headers: {
+        "Set-Cookie": await commitSession(session),
+      },
+    }
+  );
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
   // FIXME: Fix destructuring userName
-  let { honeypotInputProps, userName } = useLoaderData();
+  let { honeypotInputProps, userName, toastMessage } = useLoaderData();
   // let loaderData = useLoaderData();
 
   let [href, setHref] = useState("");
@@ -129,6 +150,24 @@ export function Layout({ children }: { children: React.ReactNode }) {
       setHref(`https://web.whatsapp.com/send?phone=${phoneNumber}`);
     }
   }, []);
+
+  useEffect(() => {
+    if (!toastMessage) {
+      return;
+    }
+
+    let { message, type } = toastMessage;
+    switch (type) {
+      case "success": {
+        toast.success(message);
+        break;
+      }
+      default: {
+        throw new Error(`${type} is not handled`);
+      }
+    }
+  }, [toastMessage]);
+
   return (
     <html lang="en">
       <head>
@@ -173,6 +212,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             </a>
           </div>
         </HoneypotProvider>
+        <Toaster />
         <ScrollRestoration />
         <Scripts />
       </body>

@@ -3,11 +3,10 @@ import {
   Link,
   data,
   isRouteErrorResponse,
-  useActionData,
   useNavigation,
   useRouteError,
 } from "react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { PortableText } from "@portabletext/react";
 import { getPost } from "../models/post.server";
 import {
@@ -32,6 +31,12 @@ import { getUser } from "~/.server/supabase";
 import type { Route } from "./+types/post";
 import { createComment, getPostComments } from "~/models/comment";
 import { getUserByUserId } from "~/models/user";
+import {
+  commitSession,
+  getSession,
+  setSuccessMessage,
+} from "~/.server/session";
+import { Textarea } from "~/components/ui/textarea";
 
 Lowlight.registerLanguage("js", javascript);
 
@@ -59,6 +64,8 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 }
 
 export async function action({ request, params }: Route.ActionArgs) {
+  let session = await getSession(request.headers.get("Cookie"));
+
   let formData = await request.formData();
   let comment = String(formData.get("comment"));
 
@@ -75,8 +82,6 @@ export async function action({ request, params }: Route.ActionArgs) {
   let { user: authUser, headers } = await getUser(request);
   let authUserId = authUser?.id;
 
-  console.log({ authUser });
-
   if (!authUser) {
     throw new Response("You need to be logged in to proceed", { status: 400 });
   }
@@ -87,8 +92,6 @@ export async function action({ request, params }: Route.ActionArgs) {
   let { user } = await getUserByUserId(request, authUserId);
 
   let userId = user[0]?.id;
-
-  console.log({ user });
 
   let commentObj = {
     content: comment,
@@ -101,9 +104,17 @@ export async function action({ request, params }: Route.ActionArgs) {
     commentObj
   );
 
-  console.log({ userComment });
+  if (userComment?.length !== 0) {
+    setSuccessMessage(session, "Comment added successfully!");
+  }
 
-  return data({ ok: true }, { headers: commentHeaders });
+  let allHeaders = {
+    ...Object.fromEntries(headers.entries()),
+    ...Object.fromEntries(commentHeaders.entries()),
+    "Set-Cookie": await commitSession(session),
+  };
+
+  return data({ ok: true }, { headers: allHeaders });
 }
 
 const components = {
@@ -232,13 +243,29 @@ function Code({ value }) {
   );
 }
 
-export default function Post({ loaderData }: Route.ComponentProps) {
+export default function Post({ loaderData, actionData }: Route.ComponentProps) {
   let { post, comments } = loaderData;
+  let fieldErrors;
 
-  let actionData = useActionData();
+  if (
+    actionData &&
+    typeof actionData === "object" &&
+    "fieldErrors" in actionData
+  ) {
+    fieldErrors = actionData.fieldErrors;
+  }
+
+  let formRef = useRef(null);
+
   let navigation = useNavigation();
 
   let isSubmitting = navigation.state === "submitting";
+
+  useEffect(() => {
+    if (!isSubmitting) {
+      formRef.current?.reset();
+    }
+  }, [isSubmitting]);
 
   return (
     <main className="mt-20 py-16 px-6  max-w-3xl 2xl:max-w-3xl mx-auto text-gray-300">
@@ -305,7 +332,7 @@ export default function Post({ loaderData }: Route.ComponentProps) {
         </div>
 
         <h3 className="mt-8 font-semibold text-lg">Add a comment</h3>
-        <Form method="post" className="mt-4">
+        <Form method="post" ref={formRef} className="mt-4">
           <FormSpacer>
             <label htmlFor="comment">
               Comment{" "}
@@ -317,16 +344,17 @@ export default function Post({ loaderData }: Route.ComponentProps) {
                 <>&nbsp;</>
               )} */}
             </label>
-            <Input
-              type="textarea"
+            <Textarea
               id="comment"
               name="comment"
-              fieldError={actionData?.fieldErrors?.comment}
+              className={`border border-gray-400 ${
+                fieldErrors?.comment ? "border-red-500" : ""
+              }  focus-visible:border-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white transition ease-in-out duration-300`}
             />
           </FormSpacer>
           <button
             disabled={isSubmitting}
-            className="bg-gradient-to-r from-[#c94b4b] to-[#4b134f] hover:bg-gradient-to-r hover:from-[#4b134f] hover:to-[#c94b4b] active:scale-[.97] transition ease-in-out duration-200 w-full flex justify-center items-center py-3 min-h-14  rounded-lg font-bold lg:text-lg text-white"
+            className="mt-4 bg-gradient-to-r from-[#c94b4b] to-[#4b134f] hover:bg-gradient-to-r hover:from-[#4b134f] hover:to-[#c94b4b] active:scale-[.97] transition ease-in-out duration-200 w-full flex justify-center items-center py-3 min-h-14  rounded-lg font-bold lg:text-lg text-white"
           >
             {isSubmitting ? (
               <div className="w-10" aria-label="submitting">

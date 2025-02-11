@@ -9,8 +9,15 @@ import {
   validatePassword,
 } from "~/.server/validation";
 import { login } from "~/models/user";
+import {
+  commitSession,
+  getSession,
+  setSuccessMessage,
+} from "~/.server/session";
 
 export async function action({ request }: Route.ActionArgs) {
+  let session = await getSession(request.headers.get("Cookie"));
+
   let formData = await request.formData();
 
   let email = String(formData.get("email"));
@@ -31,9 +38,18 @@ export async function action({ request }: Route.ActionArgs) {
 
   //   TODO:Show success toast
 
+  if (data) {
+    setSuccessMessage(session, "Logged in successfully!");
+  }
+
   // TODO: Redirect to where the user was previously after logging in
 
-  return redirect("/", { headers });
+  let allHeaders = {
+    ...Object.fromEntries(headers.entries()),
+    "Set-Cookie": await commitSession(session),
+  };
+
+  return redirect("/", { headers: allHeaders });
 }
 
 export default function Login({ actionData }: Route.ComponentProps) {
