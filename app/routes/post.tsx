@@ -86,7 +86,7 @@ export async function action({ request, params }: Route.ActionArgs) {
 
   let { user } = await getUserByUserId(request, authUserId);
 
-  let userId = user?.id;
+  let userId = user[0]?.id;
 
   console.log({ user });
 
@@ -284,6 +284,7 @@ export default function Post({ loaderData }: Route.ComponentProps) {
               <p className="text-gray-400 mt-4">No comments yet</p>
             </div>
           ) : (
+            // TODO: Show optimistic comments
             <ul className="space-y-4">
               {comments.map((item) => (
                 <li

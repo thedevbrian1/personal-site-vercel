@@ -56,11 +56,9 @@ export const links: Route.LinksFunction = () => [
 export async function loader({ request }: Route.LoaderArgs) {
   let { user: authUser } = await getUser(request);
   let userId = authUser?.id;
-  console.log({ authUser });
 
   if (authUser) {
     let { user } = await getUserByUserId(request, userId);
-    console.log({ user });
 
     if (user?.length !== 0) {
       return data({

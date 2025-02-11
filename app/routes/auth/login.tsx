@@ -29,6 +29,10 @@ export async function action({ request }: Route.ActionArgs) {
 
   console.log({ data });
 
+  //   TODO:Show success toast
+
+  // TODO: Redirect to where the user was previously after logging in
+
   return redirect("/", { headers });
 }
 

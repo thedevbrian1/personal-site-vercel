@@ -6,7 +6,8 @@ export async function getPostComments(request: Request, postId: string) {
   let { data: comments } = await supabase
     .from("comments")
     .select("id, content, users(name)")
-    .eq("post_id", postId);
+    .eq("post_id", postId)
+    .order("id", { ascending: false });
 
   return comments;
 }
