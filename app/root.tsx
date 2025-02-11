@@ -31,6 +31,8 @@ import {
 import { FormSpacer } from "./components/FormSpacer";
 import Input from "./components/Input";
 import Nav from "./components/Nav";
+import { getUser } from "./.server/supabase";
+import { getUserByUserId } from "./models/user";
 
 export const links: Route.LinksFunction = () => [
   { rel: "stylesheet", href: tailwindStyles },
@@ -51,12 +53,34 @@ export const links: Route.LinksFunction = () => [
   },
 ];
 
-export async function loader() {
-  return data({ honeypotInputProps: honeypot.getInputProps() });
+export async function loader({ request }: Route.LoaderArgs) {
+  let { user: authUser } = await getUser(request);
+  let userId = authUser?.id;
+  console.log({ authUser });
+
+  if (authUser) {
+    let { user } = await getUserByUserId(request, userId);
+    console.log({ user });
+
+    if (user?.length !== 0) {
+      return data({
+        honeypotInputProps: honeypot.getInputProps(),
+        userName: user[0].name,
+      });
+    }
+  }
+
+  return data({
+    honeypotInputProps: honeypot.getInputProps(),
+    userName: null,
+  });
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
-  let { honeypotInputProps } = useLoaderData();
+  // FIXME: Fix destructuring userName
+  let { honeypotInputProps, userName } = useLoaderData();
+  // let loaderData = useLoaderData();
+
   let [href, setHref] = useState("");
 
   let navigation = useNavigation();
@@ -136,7 +160,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 Brian Mwangi
               </h1>
             </Link>
-            <Nav navLinks={navLinks} />
+            <Nav navLinks={navLinks} userName={userName} />
           </header>
           {children}
           <Footer />

@@ -28,9 +28,28 @@ body {
   } */
 }
 
+#account-menu-toggle {
+  anchor-name: --account-toggle-el;
+}
+
+#account-menu {
+  position: absolute;
+  position-anchor: --account-toggle-el;
+  top: anchor(bottom);
+  right: anchor(right);
+}
+
+#account-menu:popover-open {
+  position: absolute;
+  inset: unset;
+  /* top: 75px;
+  right: 20px; */
+  top: anchor(bottom);
+  right: anchor(right);
+}
+
 @layer base {
   :root {
-
-    --radius: 0.5rem
+    --radius: 0.5rem;
   }
 }

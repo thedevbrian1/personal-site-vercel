@@ -1,9 +1,11 @@
 // import { NavLink } from "@remix-run/react";
-import { Link, useLocation } from "react-router";
+import { Form, Link, useLocation } from "react-router";
 import { useState } from "react";
 import { MenuIcon, XIcon } from "~/components/Icon";
+import { Button } from "./ui/button";
+import { X } from "lucide-react";
 
-export default function Nav({ navLinks }) {
+export default function Nav({ navLinks, userName }) {
   const [isMenuShowing, setIsMenuShowing] = useState(false);
   function toggleMenu() {
     setIsMenuShowing(!isMenuShowing);
@@ -12,16 +14,26 @@ export default function Nav({ navLinks }) {
   return (
     <nav>
       {/* Desktop menu */}
-      <ul className="text-white hidden lg:flex gap-6">
-        {navLinks.map((navLink) => (
-          <li
-            key={navLink.id}
-            className="hover:text-orange-400 transition duration-300 ease-in-out"
-          >
-            <NavLink to={navLink.path}>{navLink.name}</NavLink>
-          </li>
-        ))}
-      </ul>
+      <div className="flex gap-6 items-center">
+        <ul className="text-white hidden lg:flex gap-6">
+          {navLinks.map((navLink) => (
+            <li
+              key={navLink.id}
+              className="hover:text-orange-400 transition duration-300 ease-in-out"
+            >
+              <NavLink to={navLink.path}>{navLink.name}</NavLink>
+            </li>
+          ))}
+        </ul>
+        <button
+          type="button"
+          popoverTarget="account-menu"
+          id="account-menu-toggle"
+          className="hidden bg-brand-orange hover:bg-orange-700 w-10 h-10 rounded-full md:grid place-items-center text-white font-semibold transition ease-out duration-300"
+        >
+          {userName?.charAt(0)}
+        </button>
+      </div>
 
       {/* Mobile menu */}
       <div className="lg:hidden">
@@ -45,6 +57,28 @@ export default function Nav({ navLinks }) {
             </ul>
           </div>
         )}
+      </div>
+      <div
+        popover="auto"
+        // anchor="account-menu-toggle"
+        id="account-menu"
+        className="w-80 min-h-40 rounded-lg bg-[#4c4d53] p-4"
+      >
+        <div className="flex justify-end">
+          <button
+            type="button"
+            popoverTarget="account-menu"
+            popoverTargetAction="hide"
+            className="text-white"
+          >
+            <X />
+          </button>
+        </div>
+        <Form method="post" action="/logout">
+          <Button type="submit" variant="destructive">
+            Logout
+          </Button>
+        </Form>
       </div>
     </nav>
   );

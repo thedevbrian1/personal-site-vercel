@@ -32,3 +32,10 @@ export async function createUser(request: Request, userObj) {
 
   return { user, headers };
 }
+
+export async function login(request: Request, email: string, password: string) {
+  let { supabase, headers } = await createSBClient(request);
+  let { data } = await supabase.auth.signInWithPassword({ email, password });
+
+  return { data, headers };
+}
