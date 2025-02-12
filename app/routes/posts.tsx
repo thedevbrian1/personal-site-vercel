@@ -14,7 +14,6 @@ export async function loader() {
 
 export default function Posts() {
   const posts = useLoaderData();
-  console.log({ posts });
   return (
     <main className="text-gray-300 mt-20 py-16 px-6 xl:px-0 md:max-w-2xl mx-auto">
       <h1 className="font-bold text-4xl">Articles</h1>

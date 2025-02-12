@@ -34,8 +34,6 @@ export async function action({ request }: Route.ActionArgs) {
 
   let { data, headers } = await login(request, email, password);
 
-  console.log({ data });
-
   //   TODO:Show success toast
 
   if (data) {

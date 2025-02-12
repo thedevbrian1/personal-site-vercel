@@ -59,7 +59,6 @@ export async function action({ request }: Route.ActionArgs) {
   };
 
   let { user, headers } = await createUser(request, userObj);
-  console.log({ user });
 
   if (user.length > 0) {
     return data(user[0].id, { headers });
