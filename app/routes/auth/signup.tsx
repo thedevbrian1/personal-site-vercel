@@ -8,7 +8,7 @@ import {
   validateName,
   validatePassword,
 } from "~/.server/validation";
-import { createUser } from "~/models/user";
+import { createUser, getUserNames } from "~/models/user";
 import { ThreeDots } from "~/components/Icon";
 import { CircleCheckBig } from "lucide-react";
 import subscribeStyles from "~/styles/subscribe.css?url";
@@ -26,8 +26,6 @@ export function links() {
 export async function action({ request }: Route.ActionArgs) {
   let formData = await request.formData();
 
-  return 3;
-
   let userName = String(formData.get("username"));
   let email = String(formData.get("email"));
   let password = String(formData.get("password"));
@@ -40,6 +38,18 @@ export async function action({ request }: Route.ActionArgs) {
 
   if (Object.values(fieldErrors).some(Boolean)) {
     return badRequest({ fieldErrors });
+  }
+
+  // Check if username exists first
+
+  let { data: users } = await getUserNames(request);
+
+  let userNames = users?.map((item) => item.name);
+
+  if (userNames?.includes(userName.trim())) {
+    throw new Response("Name already in use. Please try another one.", {
+      status: 400,
+    });
   }
 
   let userObj = {

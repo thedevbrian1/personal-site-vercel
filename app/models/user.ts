@@ -39,3 +39,10 @@ export async function login(request: Request, email: string, password: string) {
 
   return { data, headers };
 }
+
+export async function getUserNames(request: Request) {
+  let { supabase } = await createSBClient(request);
+  let { data } = await supabase.from("users").select("name");
+
+  return { data };
+}

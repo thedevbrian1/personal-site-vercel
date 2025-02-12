@@ -243,7 +243,11 @@ function Code({ value }) {
   );
 }
 
-export default function Post({ loaderData, actionData }: Route.ComponentProps) {
+export default function Post({
+  loaderData,
+  actionData,
+  matches,
+}: Route.ComponentProps) {
   let { post, comments } = loaderData;
   let fieldErrors;
 
@@ -255,11 +259,20 @@ export default function Post({ loaderData, actionData }: Route.ComponentProps) {
     fieldErrors = actionData.fieldErrors;
   }
 
+  let userName = matches[0].data.userName;
+
   let formRef = useRef(null);
 
   let navigation = useNavigation();
 
   let isSubmitting = navigation.state === "submitting";
+
+  console.log({ el: navigation.formData });
+
+  let optimisticContent = {
+    userName,
+    content: navigation.formData?.get("comment"),
+  };
 
   useEffect(() => {
     if (!isSubmitting) {
@@ -311,13 +324,12 @@ export default function Post({ loaderData, actionData }: Route.ComponentProps) {
               <p className="text-gray-400 mt-4">No comments yet</p>
             </div>
           ) : (
-            // TODO: Show optimistic comments
             <ul className="space-y-4">
+              {navigation.formData ? (
+                <OptimisticComment item={optimisticContent} />
+              ) : null}
               {comments.map((item) => (
-                <li
-                  key={crypto.randomUUID()}
-                  className="bg-[#35363e] p-6 rounded-lg"
-                >
+                <li key={item.id} className="bg-[#35363e] p-6 rounded-lg">
                   <div className="flex gap-2 items-center">
                     <span className="w-10 h-10 rounded-full font-semibold bg-brand-orange text-white grid place-items-center">
                       {item.users.name.charAt(0)}
@@ -367,6 +379,20 @@ export default function Post({ loaderData, actionData }: Route.ComponentProps) {
         </Form>
       </section>
     </main>
+  );
+}
+
+function OptimisticComment({ item }) {
+  return (
+    <li className="bg-[#35363e] p-6 rounded-lg">
+      <div className="flex gap-2 items-center">
+        <span className="w-10 h-10 rounded-full font-semibold bg-brand-orange text-white grid place-items-center">
+          {item.userName.charAt(0)}
+        </span>
+        <p className="font-semibold">{item.userName}</p>
+      </div>
+      <div className="mt-4 text-gray-300/80">{item.content}</div>
+    </li>
   );
 }
 
