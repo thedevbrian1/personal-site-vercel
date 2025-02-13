@@ -32,6 +32,8 @@ export function links() {
 export async function action({ request }: Route.ActionArgs) {
   let formData = await request.formData();
 
+  return 3;
+
   let userName = String(formData.get("username"));
   let email = String(formData.get("email"));
   let password = String(formData.get("password"));
@@ -164,14 +166,14 @@ export default function Signup({ actionData }: Route.ComponentProps) {
               </FormSpacer>
               <button
                 type="submit"
-                className="bg-gradient-to-r from-[#c94b4b] to-[#4b134f] hover:bg-gradient-to-r hover:from-[#4b134f] hover:to-[#c94b4b] active:scale-[.97] transition ease-in-out duration-200 w-full flex justify-center items-center min-h-14 py-3  rounded-lg font-bold lg:text-lg text-white"
+                className="bg-gradient-to-r from-[#c94b4b] to-[#4b134f] hover:bg-gradient-to-r hover:from-[#4b134f] hover:to-[#c94b4b] active:scale-[.97] transition ease-in-out duration-300 w-full flex justify-center items-center min-h-14 py-3  rounded-lg font-bold lg:text-lg text-white"
               >
                 {isSubmitting ? (
                   <span className="w-10">
                     <ThreeDots />
                   </span>
                 ) : (
-                  "Sign up"
+                  "Sign Up"
                 )}
               </button>
             </Form>
@@ -184,7 +186,7 @@ export default function Signup({ actionData }: Route.ComponentProps) {
           </div>
           <div aria-hidden={!id} className="text-center">
             <div className="flex justify-center text-green-400">
-              <CircleCheckBig className="w-96" />
+              <CircleCheckBig />
             </div>
             <h2 className="font-semibold font-heading text-3xl lg:text-5xl mt-4">
               Success!

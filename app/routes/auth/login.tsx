@@ -133,22 +133,22 @@ export default function Login({ actionData }: Route.ComponentProps) {
           </FormSpacer>
           <button
             type="submit"
-            className="bg-gradient-to-r from-[#c94b4b] to-[#4b134f] hover:bg-gradient-to-r hover:from-[#4b134f] hover:to-[#c94b4b] active:scale-[.97] transition ease-in-out duration-200 w-full flex justify-center items-center min-h-14 py-3  rounded-lg font-bold lg:text-lg text-white"
+            className="bg-gradient-to-r from-[#c94b4b] to-[#4b134f] hover:bg-gradient-to-r hover:from-[#4b134f] hover:to-[#c94b4b] active:scale-[.97] transition ease-in-out duration-300 w-full flex justify-center items-center min-h-14 py-3  rounded-lg font-bold lg:text-lg text-white"
           >
             {isSubmitting ? (
               <span className="w-10">
                 <ThreeDots />
               </span>
             ) : (
-              "Log in"
+              "Log In"
             )}
           </button>
         </Form>
         <Link
-          to="/login"
+          to="/signup"
           className="text-blue-300 hover:text-blue-500 underline inline-block mt-4 transition ease-in-out duration-300"
         >
-          Already have an account? Log in instead
+          Don't have an account? Sign up instead
         </Link>
       </div>
     </main>

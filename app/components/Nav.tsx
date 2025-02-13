@@ -15,7 +15,7 @@ export default function Nav({ navLinks, userName }) {
     <nav className="flex gap-2 md:gap-4 lg:gap-6 items-center">
       {/* Desktop menu */}
       <div className="flex gap-6 items-center">
-        <ul className="text-white hidden lg:flex gap-6">
+        <ul className="text-white hidden lg:flex items-center gap-6">
           {navLinks.map((navLink) => (
             <li
               key={navLink.id}
@@ -24,6 +24,17 @@ export default function Nav({ navLinks, userName }) {
               <NavLink to={navLink.path}>{navLink.name}</NavLink>
             </li>
           ))}
+          {userName ? null : (
+            <li>
+              <Link
+                to="/login"
+                prefetch="intent"
+                className="bg-gradient-to-r from-[#c94b4b] to-[#4b134f] hover:bg-gradient-to-r hover:from-[#4b134f] hover:to-[#c94b4b] active:scale-[.97] transition ease-in-out duration-300 flex justify-center py-2 px-4  rounded-lg font-bold lg:text-lg text-white"
+              >
+                Log In
+              </Link>
+            </li>
+          )}
         </ul>
       </div>
 
@@ -46,6 +57,17 @@ export default function Nav({ navLinks, userName }) {
                   <NavLink to={navLink.path}>{navLink.name}</NavLink>
                 </li>
               ))}
+              {userName ? null : (
+                <li>
+                  <Link
+                    to="/login"
+                    prefetch="intent"
+                    className="bg-gradient-to-r from-[#c94b4b] to-[#4b134f] hover:bg-gradient-to-r hover:from-[#4b134f] hover:to-[#c94b4b] transition ease-in-out duration-200 flex justify-center py-2 px-4  rounded-lg font-bold lg:text-lg text-white"
+                  >
+                    Log In
+                  </Link>
+                </li>
+              )}
             </ul>
           </div>
         )}
@@ -65,7 +87,7 @@ export default function Nav({ navLinks, userName }) {
         popover="auto"
         // anchor="account-menu-toggle"
         id="account-menu"
-        className="w-80 min-h-40 rounded-lg bg-[#4c4d53] p-4"
+        className="w-80 min-h-32 rounded-lg bg-[#4c4d53] p-4"
       >
         <div className="flex justify-end">
           <button
@@ -77,7 +99,7 @@ export default function Nav({ navLinks, userName }) {
             <X />
           </button>
         </div>
-        <Form method="post" action="/logout">
+        <Form method="post" action="/logout" className="flex justify-end mt-8">
           <Button
             type="submit"
             variant="destructive"
