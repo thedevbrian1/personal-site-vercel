@@ -1,4 +1,10 @@
-import { data, Form, Link, useNavigation } from "react-router";
+import {
+  data,
+  Form,
+  isRouteErrorResponse,
+  Link,
+  useNavigation,
+} from "react-router";
 import { FormSpacer } from "~/components/FormSpacer";
 import { Input } from "~/components/ui/input";
 import type { Route } from "./+types/signup";
@@ -9,7 +15,7 @@ import {
   validatePassword,
 } from "~/.server/validation";
 import { createUser, getUserNames } from "~/models/user";
-import { ThreeDots } from "~/components/Icon";
+import { ErrorIcon, ThreeDots } from "~/components/Icon";
 import { CircleCheckBig } from "lucide-react";
 import subscribeStyles from "~/styles/subscribe.css?url";
 import { useEffect, useRef } from "react";
@@ -49,6 +55,7 @@ export async function action({ request }: Route.ActionArgs) {
   if (userNames?.includes(userName.trim())) {
     throw new Response("Name already in use. Please try another one.", {
       status: 400,
+      statusText: "Bad Request",
     });
   }
 
@@ -60,7 +67,7 @@ export async function action({ request }: Route.ActionArgs) {
 
   let { user, headers } = await createUser(request, userObj);
 
-  if (user.length > 0) {
+  if (user?.length > 0) {
     return data(user[0].id, { headers });
   }
 
@@ -199,4 +206,50 @@ export default function Signup({ actionData }: Route.ComponentProps) {
       </div>
     </main>
   );
+}
+
+export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
+  if (isRouteErrorResponse(error)) {
+    console.error({ error });
+    return (
+      <div className="w-full h-screen flex justify-center items-center">
+        <div className="flex flex-col items-center gap-4 text-gray-300">
+          <div className="w-40">
+            <ErrorIcon />
+          </div>
+          <h1 className="font-semibold text-3xl text-red-500">
+            {error.status} {error.statusText}
+          </h1>
+          <p>{error.data}</p>
+          <Link
+            to="."
+            prefetch="intent"
+            className="px-4 py-2 rounded flex gap-1 text-white bg-gradient-to-r from-[#c94b4b] to-[#4b134f] hover:bg-gradient-to-r hover:from-[#4b134f] hover:to-[#c94b4b] active:scale-[.97] transition ease-in-out duration-300"
+          >
+            Try again
+          </Link>
+        </div>
+      </div>
+    );
+  } else if (error instanceof Error) {
+    console.error({ error });
+    return (
+      <div className="w-full h-screen flex justify-center items-center">
+        <div className="flex flex-col items-center gap-4 px-6 xl:px-0">
+          <div className="w-40">
+            <ErrorIcon />
+          </div>
+          <h1 className="text-red-500 text-3xl">Error</h1>
+          <p>{error.message}</p>
+          <Link
+            to="."
+            prefetch="intent"
+            className="px-4 py-2 rounded flex gap-1 text-white bg-gradient-to-r from-[#c94b4b] to-[#4b134f] hover:bg-gradient-to-r hover:from-[#4b134f] hover:to-[#c94b4b]"
+          >
+            Try again
+          </Link>
+        </div>
+      </div>
+    );
+  }
 }

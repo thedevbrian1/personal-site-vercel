@@ -17,6 +17,15 @@ export async function createUser(request: Request, userObj) {
     password: userObj.password,
   });
 
+  console.log({ data });
+
+  if (data.user?.identities?.length === 0) {
+    throw new Response("Email already in use. Please try another one!", {
+      status: 400,
+      statusText: "Bad Request",
+    });
+  }
+
   let userId = data.user?.id;
 
   let { data: user } = await supabase
