@@ -32,8 +32,6 @@ export function links() {
 export async function action({ request }: Route.ActionArgs) {
   let formData = await request.formData();
 
-  return 3;
-
   let userName = String(formData.get("username"));
   let email = String(formData.get("email"));
   let password = String(formData.get("password"));
